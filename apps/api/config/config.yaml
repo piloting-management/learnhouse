@@ -39,10 +39,10 @@ redis_config:
 
 payments_config:
   stripe:
-    stripe_secret_key: ""
-    stripe_publishable_key: ""
+    stripe_secret_key: "pk_test_51IB8mNC5bWYCFDjdNjacPXNYD0WAXiIdWSmmYKjIOXe7YjZI3ukkSpsUZTbn14b3jdQ64OajVTA5AjHliGbj4esY00fVvO490Q"
+    stripe_publishable_key: "pk_test_51IB8mNC5bWYCFDjdNjacPXNYD0WAXiIdWSmmYKjIOXe7YjZI3ukkSpsUZTbn14b3jdQ64OajVTA5AjHliGbj4esY00fVvO490Q"
     stripe_webhook_standard_secret: ""
-    stripe_client_id: ""
+    stripe_client_id: "acct_1QcUllDVISvzCSyn"
 
 ai_config:
   chromadb_config:
