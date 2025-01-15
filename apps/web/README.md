@@ -31,6 +31,17 @@ Ensure you have the following installed:
 - **VSCode** (with the Node.js and Debugger extensions)
 - **TurboRepo** for managing monorepos (optional but recommended)
 
+.env
+NEXT_PUBLIC_LEARNHOUSE_MULTI_ORG=false
+NEXT_PUBLIC_LEARNHOUSE_DEFAULT_ORG=default
+NEXT_PUBLIC_LEARNHOUSE_API_URL=http://localhost:1338/api/v1/
+NEXT_PUBLIC_LEARNHOUSE_BACKEND_URL=http://localhost:1338/
+NEXT_PUBLIC_LEARNHOUSE_DOMAIN=localhost:3000
+NEXT_PUBLIC_LEARNHOUSE_TOP_DOMAIN=localhost
+NEXT_PUBLIC_LEARNHOUSE_COLLABORATION_WS_URL=wss://localhost:1998
+NEXTAUTH_SECRET="my-very-secret-key"
+NEXTAUTH_URL=http://localhost:3000/
+
 ---
 
 ## Installation

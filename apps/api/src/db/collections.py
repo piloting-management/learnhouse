@@ -20,14 +20,14 @@ class Collection(CollectionBase, table=True):
 
 
 class CollectionCreate(CollectionBase):
-    courses: list[int]
+    subjects: list[int]
     org_id: int = Field(default=None, foreign_key="organization.id")
 
     pass
 
 
 class CollectionUpdate(CollectionBase):
-    courses: Optional[list]
+    subjects: Optional[list]
     name: Optional[str]
     public: Optional[bool]
     description: Optional[str] = ""
@@ -35,7 +35,7 @@ class CollectionUpdate(CollectionBase):
 
 class CollectionRead(CollectionBase):
     id: int
-    courses: list
+    subjects: list
     collection_uuid: str
     creation_date: str
     update_date: str

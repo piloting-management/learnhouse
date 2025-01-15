@@ -32,14 +32,14 @@ mailing_config:
   system_email_adress: ""
 
 database_config:
-  sql_connection_string: postgresql://learnhouse:learnhouse@localhost:5432/learnhouse
+  sql_connection_string: postgresql://learnhouse:learnhouse@2.59.117.75:5432/learnhouse
 
 redis_config:
   redis_connection_string: redis://localhost:6379/learnhouse
 
 payments_config:
   stripe:
-    stripe_secret_key: "pk_test_51IB8mNC5bWYCFDjdNjacPXNYD0WAXiIdWSmmYKjIOXe7YjZI3ukkSpsUZTbn14b3jdQ64OajVTA5AjHliGbj4esY00fVvO490Q"
+    stripe_secret_key: "sk_test_51IB8mNC5bWYCFDjdUDRwgUpSgz60v6YZj5cfoPH1RUQqScsehflGU55Bj97YxmcDwhwEQjIqqqrAPuPl3ObOOf8400m9LnLQfS"
     stripe_publishable_key: "pk_test_51IB8mNC5bWYCFDjdNjacPXNYD0WAXiIdWSmmYKjIOXe7YjZI3ukkSpsUZTbn14b3jdQ64OajVTA5AjHliGbj4esY00fVvO490Q"
     stripe_webhook_standard_secret: ""
     stripe_client_id: "acct_1QcUllDVISvzCSyn"

@@ -14,8 +14,8 @@ from src.db.collections import (
     CollectionRead,
     CollectionUpdate,
 )
-from src.db.collections_courses import CollectionCourse
-from src.db.courses.courses import Course
+from src.db.collections_subjects import CollectionSubject
+from src.db.subjects.subjects import Subject
 from src.services.users.users import PublicUser
 from fastapi import HTTPException, status, Request
 
@@ -44,18 +44,18 @@ async def get_collection(
         request, collection.collection_uuid, current_user, "read", db_session
     )
 
-    # get courses in collection
+    # get subjects in collection
     statement_all = (
-        select(Course)
-        .join(CollectionCourse, Course.id == CollectionCourse.course_id)
-        .where(CollectionCourse.org_id == collection.org_id)
-        .distinct(Course.id)
+        select(Subject)
+        .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
+        .where(CollectionSubject.org_id == collection.org_id)
+        .distinct(Subject.id)
     )
 
     statement_public = (
-        select(Course)
-        .join(CollectionCourse, Course.id == CollectionCourse.course_id)
-        .where(CollectionCourse.org_id == collection.org_id, Course.public == True)
+        select(Subject)
+        .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
+        .where(CollectionSubject.org_id == collection.org_id, Subject.public == True)
     )
 
     if current_user.user_uuid == "user_anonymous":
@@ -63,9 +63,9 @@ async def get_collection(
     else:
         statement = statement_all
 
-    courses = db_session.exec(statement).all()
+    subjects = db_session.exec(statement).all()
 
-    collection = CollectionRead(**collection.model_dump(), courses=courses)
+    collection = CollectionRead(**collection.model_dump(), subjects=subjects)
 
     return collection
 
@@ -91,12 +91,12 @@ async def create_collection(
     db_session.commit()
     db_session.refresh(collection)
 
-    # Link courses to collection
+    # Link subjects to collection
     if collection:
-        for course_id in collection_object.courses:
-            collection_course = CollectionCourse(
+        for subject_id in collection_object.subjects:
+            collection_course = CollectionSubject(
                 collection_id=int(collection.id),  # type: ignore
-                course_id=course_id,
+                subject_id=subject_id,
                 org_id=int(collection_object.org_id),
                 creation_date=str(datetime.now()),
                 update_date=str(datetime.now()),
@@ -107,15 +107,15 @@ async def create_collection(
     db_session.commit()
     db_session.refresh(collection)
 
-    # Get courses once again
+    # Get subjects once again
     statement = (
-        select(Course)
-        .join(CollectionCourse, Course.id == CollectionCourse.course_id)
-        .distinct(Course.id)
+        select(Subject)
+        .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
+        .distinct(Subject.id)
     )
-    courses = db_session.exec(statement).all()
+    subjects = db_session.exec(statement).all()
 
-    collection = CollectionRead(**collection.model_dump(), courses=courses)
+    collection = CollectionRead(**collection.model_dump(), subjects=subjects)
 
     return CollectionRead.model_validate(collection)
 
@@ -140,9 +140,9 @@ async def update_collection(
         request, collection.collection_uuid, current_user, "update", db_session
     )
 
-    courses = collection_object.courses
+    subjects = collection_object.subjects
 
-    del collection_object.courses
+    del collection_object.subjects
 
     # Update only the fields that were passed in
     for var, value in vars(collection_object).items():
@@ -156,20 +156,20 @@ async def update_collection(
         if value is not None:
             setattr(collection, var, value)
 
-    statement = select(CollectionCourse).where(
-        CollectionCourse.collection_id == collection.id
+    statement = select(CollectionSubject).where(
+        CollectionSubject.collection_id == collection.id
     )
-    collection_courses = db_session.exec(statement).all()
+    collection_subjects = db_session.exec(statement).all()
 
-    # Delete all collection_courses
-    for collection_course in collection_courses:
+    # Delete all collection_subjects
+    for collection_course in collection_subjects:
         db_session.delete(collection_course)
 
-    # Add new collection_courses
-    for course in courses or []:
-        collection_course = CollectionCourse(
+    # Add new collection_subjects
+    for course in subjects or []:
+        collection_course = CollectionSubject(
             collection_id=int(collection.id),  # type: ignore
-            course_id=int(course),
+            subject_id=int(course),
             org_id=int(collection.org_id),
             creation_date=str(datetime.now()),
             update_date=str(datetime.now()),
@@ -180,17 +180,17 @@ async def update_collection(
     db_session.commit()
     db_session.refresh(collection)
 
-    # Get courses once again
+    # Get subjects once again
     statement = (
-        select(Course)
-        .join(CollectionCourse, Course.id == CollectionCourse.course_id)
-        .where(Course.org_id == collection.org_id)
-        .distinct(Course.id)
+        select(Subject)
+        .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
+        .where(Subject.org_id == collection.org_id)
+        .distinct(Subject.id)
     )
 
-    courses = db_session.exec(statement).all()
+    subjects = db_session.exec(statement).all()
 
-    collection = CollectionRead(**collection.model_dump(), courses=courses)
+    collection = CollectionRead(**collection.model_dump(), subjects=subjects)
 
     return collection
 
@@ -250,19 +250,19 @@ async def get_collections(
 
     collections = db_session.exec(statement).all()
 
-    collections_with_courses = []
+    collections_with_subjects = []
 
     for collection in collections:
         statement_all = (
-            select(Course)
-            .join(CollectionCourse, Course.id == CollectionCourse.course_id)
-            .where(CollectionCourse.org_id == collection.org_id)
-            .distinct(Course.id)
+            select(Subject)
+            .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
+            .where(CollectionSubject.org_id == collection.org_id)
+            .distinct(Subject.id)
         )
         statement_public = (
-            select(Course)
-            .join(CollectionCourse, Course.id == CollectionCourse.course_id)
-            .where(CollectionCourse.org_id == org_id, Course.public == True)
+            select(Subject)
+            .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
+            .where(CollectionSubject.org_id == org_id, Subject.public == True)
         )
         if current_user.id == 0:
             statement = statement_public
@@ -270,12 +270,12 @@ async def get_collections(
             # RBAC check
             statement = statement_all
 
-        courses = db_session.exec(statement).all()
+        subjects = db_session.exec(statement).all()
 
-        collection = CollectionRead(**collection.model_dump(), courses=courses)
-        collections_with_courses.append(collection)
+        collection = CollectionRead(**collection.model_dump(), subjects=subjects)
+        collections_with_subjects.append(collection)
 
-    return collections_with_courses
+    return collections_with_subjects
 
 
 ## 🔒 RBAC Utils ##
