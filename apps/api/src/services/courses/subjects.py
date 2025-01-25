@@ -1,6 +1,9 @@
 from typing import Literal, List
 from uuid import uuid4
 from sqlmodel import Session, select, or_, and_
+from src.db.courses.courses import Course
+
+from src.db.subjects.subjects_courses import SubjectCourse
 from src.db.usergroup_resources import UserGroupResource
 from src.db.usergroup_user import UserGroupUser
 from src.db.organizations import Organization
@@ -17,7 +20,6 @@ from src.db.subjects.subjects import (
     SubjectCreate,
     SubjectRead,
     SubjectUpdate,
-    FullSubjectReadWithTrail,
 )
 from src.security.rbac.rbac import (
     authorization_verify_based_on_roles_and_authorship,
@@ -97,6 +99,56 @@ async def get_subject_by_id(
 
     return subject
 
+async def get_subjects(
+    request: Request,
+    org_id: str,
+    current_user: PublicUser | AnonymousUser,
+    db_session: Session,
+    page: int = 1,
+    limit: int = 10,
+) -> List[SubjectRead]:
+
+    statement_public = select(Subject).where(
+        Subject.org_id == org_id, Subject.public == True
+    )
+    statement_all = (
+        select(Subject).where(Subject.org_id == org_id).distinct(Subject.id)
+    )
+
+    if current_user.id == 0:
+        statement = statement_public
+    else:
+        statement = statement_all
+
+    subjects = db_session.exec(statement).all()
+
+    subjects_with_courses = []
+
+    for subject in subjects:
+        statement_all = (
+            select(Subject)
+            .join(SubjectCourse, Course.id == SubjectCourse.course_id)
+            .where(SubjectCourse.org_id == subject.org_id,
+                   SubjectCourse.subject_id == subject.id)
+            .distinct(Course.id)
+        )
+        statement_public = (
+            select(Course)
+            .join(SubjectCourse, Course.id == SubjectCourse.course_id)
+            .where(SubjectCourse.org_id == org_id, SubjectCourse.subject_id == subject.id, Course.public == True)
+        )
+        if current_user.id == 0:
+            statement = statement_public
+        else:
+            # RBAC check
+            statement = statement_all
+
+        courses = db_session.exec(statement).all()
+
+        subject = SubjectRead(**subject.model_dump(), courses=courses)
+        subjects_with_courses.append(subject)
+
+    return subjects_with_courses
 
 # async def get_subject_meta(
 #     request: Request,

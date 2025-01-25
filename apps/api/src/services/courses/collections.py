@@ -16,6 +16,8 @@ from src.db.collections import (
 )
 from src.db.collections_subjects import CollectionSubject
 from src.db.subjects.subjects import Subject
+
+
 from src.services.users.users import PublicUser
 from fastapi import HTTPException, status, Request
 
@@ -77,7 +79,9 @@ async def create_collection(
     db_session: Session,
 ) -> CollectionRead:
     collection = Collection.model_validate(collection_object)
-
+    
+    print(f"collection_object: {collection_object}")
+    print(f"current_user: {current_user}")
     # RBAC check
     await rbac_check(request, "collection_x", current_user, "create", db_session)
 
@@ -256,13 +260,14 @@ async def get_collections(
         statement_all = (
             select(Subject)
             .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
-            .where(CollectionSubject.org_id == collection.org_id)
+            .where(CollectionSubject.org_id == collection.org_id,
+                   CollectionSubject.collection_id == collection.id)
             .distinct(Subject.id)
         )
         statement_public = (
             select(Subject)
             .join(CollectionSubject, Subject.id == CollectionSubject.subject_id)
-            .where(CollectionSubject.org_id == org_id, Subject.public == True)
+            .where(CollectionSubject.org_id == org_id, CollectionSubject.collection_id == collection.id, Subject.public == True)
         )
         if current_user.id == 0:
             statement = statement_public

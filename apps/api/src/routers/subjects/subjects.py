@@ -2,33 +2,30 @@ from typing import List
 from fastapi import APIRouter, Depends, UploadFile, Form, Request
 from sqlmodel import Session
 from src.core.events.database import get_db_session
-from src.db.courses.course_updates import (
-    CourseUpdateCreate,
-    CourseUpdateRead,
-    CourseUpdateUpdate,
+from src.db.subjects.subject_updates import (
+    SubjectUpdateCreate,
+    SubjectUpdateRead,
+    SubjectUpdateUpdate,
 )
 from src.db.users import PublicUser
-from src.db.courses.courses import (
-    CourseCreate,
-    CourseRead,
-    CourseUpdate,
-    FullCourseReadWithTrail,
+from src.db.subjects.subjects import (
+    SubjectCreate,
+    SubjectRead,
+    SubjectUpdate,
 )
 from src.security.auth import get_current_user
-from src.services.courses.courses import (
-    create_course,
-    get_course,
-    get_course_by_id,
-    get_course_meta,
-    get_courses_orgslug,
-    update_course,
-    delete_course,
-    update_course_thumbnail,
+from src.services.courses.subjects import (
+    create_subject,
+    get_subject,
+    get_subjects,
+    get_subject_by_id,
+    update_subject,
+    delete_subject,
+    update_subject_thumbnail,
 )
 from src.services.courses.updates import (
     create_update,
     delete_update,
-    get_updates_by_course_uuid,
     update_update,
 )
 
@@ -37,7 +34,7 @@ router = APIRouter()
 
 
 @router.post("/")
-async def api_create_course(
+async def api_create_subject(
     request: Request,
     org_id: int,
     name: str = Form(),
@@ -49,11 +46,11 @@ async def api_create_course(
     current_user: PublicUser = Depends(get_current_user),
     db_session: Session = Depends(get_db_session),
     thumbnail: UploadFile | None = None,
-) -> CourseRead:
+) -> SubjectRead:
     """
-    Create new Course
+    Create new Subject
     """
-    course = CourseCreate(
+    subject = SubjectCreate(
         name=name,
         description=description,
         org_id=org_id,
@@ -63,180 +60,193 @@ async def api_create_course(
         learnings=learnings,
         tags=tags,
     )
-    return await create_course(
-        request, org_id, course, current_user, db_session, thumbnail
+    return await create_subject(
+        request, org_id, subject, current_user, db_session, thumbnail
     )
 
 
-@router.put("/{course_uuid}/thumbnail")
-async def api_create_course_thumbnail(
+@router.put("/{subject_uuid}/thumbnail")
+async def api_create_subject_thumbnail(
     request: Request,
-    course_uuid: str,
+    subject_uuid: str,
     thumbnail: UploadFile | None = None,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
-) -> CourseRead:
+) -> SubjectRead:
     """
-    Update new Course Thumbnail
+    Update new Subject Thumbnail
     """
-    return await update_course_thumbnail(
-        request, course_uuid, current_user, db_session, thumbnail
+    return await update_subject_thumbnail(
+        request, subject_uuid, current_user, db_session, thumbnail
     )
 
 
-@router.get("/{course_uuid}")
-async def api_get_course(
+@router.get("/{subject_uuid}")
+async def api_get_subject(
     request: Request,
-    course_uuid: str,
+    subject_uuid: str,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
-) -> CourseRead:
+) -> SubjectRead:
     """
-    Get single Course by course_uuid
+    Get single Subject by subject_uuid
     """
-    return await get_course(
-        request, course_uuid, current_user=current_user, db_session=db_session
+    return await get_subject(
+        request, subject_uuid, current_user=current_user, db_session=db_session
     )
 
 
-@router.get("/id/{course_id}")
-async def api_get_course_by_id(
+@router.get("/id/{subject_id}")
+async def api_get_subject_by_id(
     request: Request,
-    course_id: str,
+    subject_id: str,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
-) -> CourseRead:
+) -> SubjectRead:
     """
-    Get single Course by id
+    Get single Subject by id
     """
-    return await get_course_by_id(
-        request, course_id, current_user=current_user, db_session=db_session
+    return await get_subject_by_id(
+        request, subject_id, current_user=current_user, db_session=db_session
     )
 
 
-@router.get("/{course_uuid}/meta")
-async def api_get_course_meta(
-    request: Request,
-    course_uuid: str,
-    db_session: Session = Depends(get_db_session),
-    current_user: PublicUser = Depends(get_current_user),
-) -> FullCourseReadWithTrail:
-    """
-    Get single Course Metadata (chapters, activities) by course_uuid
-    """
-    return await get_course_meta(
-        request, course_uuid, current_user=current_user, db_session=db_session
-    )
+# @router.get("/{subject_uuid}/meta")
+# async def api_get_subject_meta(
+#     request: Request,
+#     subject_uuid: str,
+#     db_session: Session = Depends(get_db_session),
+#     current_user: PublicUser = Depends(get_current_user),
+# ) -> FullSubjectReadWithTrail:
+#     """
+#     Get single Subject Metadata (chapters, activities) by subject_uuid
+#     """
+#     return await get_subject_meta(
+#         request, subject_uuid, current_user=current_user, db_session=db_session
+#     )
 
+# @router.get("/org_slug/{org_slug}/page/{page}/limit/{limit}")
+# async def api_get_subject_by_orgslug(
+#     request: Request,
+#     page: int,
+#     limit: int,
+#     org_slug: str,
+#     db_session: Session = Depends(get_db_session),
+#     current_user: PublicUser = Depends(get_current_user),
+# ) -> List[SubjectRead]:
+#     """
+#     Get subjects by page and limit
+#     """
+#     return await get_subjects_orgslug(
+#         request, current_user, org_slug, db_session, page, limit
+#     )
 
-@router.get("/org_slug/{org_slug}/page/{page}/limit/{limit}")
-async def api_get_course_by_orgslug(
+@router.get("/org/{org_id}/page/{page}/limit/{limit}")
+async def api_get_subjects_by(
     request: Request,
     page: int,
     limit: int,
-    org_slug: str,
+    org_id: str,
+    current_user: PublicUser = Depends(get_current_user),
+    db_session=Depends(get_db_session),
+) -> List[SubjectRead]:
+    """
+    Get subjects by page and limit
+    """
+    return await get_subjects(request, org_id, current_user, db_session, page, limit)
+
+
+@router.put("/{subject_uuid}")
+async def api_update_subject(
+    request: Request,
+    subject_object: SubjectUpdate,
+    subject_uuid: str,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
-) -> List[CourseRead]:
+) -> SubjectRead:
     """
-    Get courses by page and limit
+    Update Subject by subject_uuid
     """
-    return await get_courses_orgslug(
-        request, current_user, org_slug, db_session, page, limit
+    return await update_subject(
+        request, subject_object, subject_uuid, current_user, db_session
     )
 
 
-@router.put("/{course_uuid}")
-async def api_update_course(
+@router.delete("/{subject_uuid}")
+async def api_delete_subject(
     request: Request,
-    course_object: CourseUpdate,
-    course_uuid: str,
-    db_session: Session = Depends(get_db_session),
-    current_user: PublicUser = Depends(get_current_user),
-) -> CourseRead:
-    """
-    Update Course by course_uuid
-    """
-    return await update_course(
-        request, course_object, course_uuid, current_user, db_session
-    )
-
-
-@router.delete("/{course_uuid}")
-async def api_delete_course(
-    request: Request,
-    course_uuid: str,
+    subject_uuid: str,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
 ):
     """
-    Delete Course by ID
+    Delete Subject by ID
     """
 
-    return await delete_course(request, course_uuid, current_user, db_session)
+    return await delete_subject(request, subject_uuid, current_user, db_session)
 
 
-@router.get("/{course_uuid}/updates")
-async def api_get_course_updates(
+# @router.get("/{subject_uuid}/updates")
+# async def api_get_subject_updates(
+#     request: Request,
+#     subject_uuid: str,
+#     db_session: Session = Depends(get_db_session),
+#     current_user: PublicUser = Depends(get_current_user),
+# ) -> List[SubjectUpdateRead]:
+#     """
+#     Get Subject Updates by subject_uuid
+#     """
+
+#     return await get_updates_by_subject_uuid(
+#         request, subject_uuid, current_user, db_session
+#     )
+
+
+@router.post("/{subject_uuid}/updates")
+async def api_create_subject_update(
     request: Request,
-    course_uuid: str,
+    subject_uuid: str,
+    update_object: SubjectUpdateCreate,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
-) -> List[CourseUpdateRead]:
+) -> SubjectUpdateRead:
     """
-    Get Course Updates by course_uuid
-    """
-
-    return await get_updates_by_course_uuid(
-        request, course_uuid, current_user, db_session
-    )
-
-
-@router.post("/{course_uuid}/updates")
-async def api_create_course_update(
-    request: Request,
-    course_uuid: str,
-    update_object: CourseUpdateCreate,
-    db_session: Session = Depends(get_db_session),
-    current_user: PublicUser = Depends(get_current_user),
-) -> CourseUpdateRead:
-    """
-    Create new Course Update
+    Create new Subject Update
     """
 
     return await create_update(
-        request, course_uuid, update_object, current_user, db_session
+        request, subject_uuid, update_object, current_user, db_session
     )
 
 
-@router.put("/{course_uuid}/update/{courseupdate_uuid}")
-async def api_update_course_update(
+@router.put("/{subject_uuid}/update/{subjectupdate_uuid}")
+async def api_update_subject_update(
     request: Request,
-    course_uuid: str,
-    courseupdate_uuid: str,
-    update_object: CourseUpdateUpdate,
+    subject_uuid: str,
+    subjectupdate_uuid: str,
+    update_object: SubjectUpdateUpdate,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
-) -> CourseUpdateRead:
+) -> SubjectUpdateRead:
     """
-    Update Course Update by courseupdate_uuid
+    Update Subject Update by subjectupdate_uuid
     """
 
     return await update_update(
-        request, courseupdate_uuid, update_object, current_user, db_session
+        request, subjectupdate_uuid, update_object, current_user, db_session
     )
 
 
-@router.delete("/{course_uuid}/update/{courseupdate_uuid}")
-async def api_delete_course_update(
+@router.delete("/{subject_uuid}/update/{subjectupdate_uuid}")
+async def api_delete_subject_update(
     request: Request,
-    course_uuid: str,
-    courseupdate_uuid: str,
+    subject_uuid: str,
+    subjectupdate_uuid: str,
     db_session: Session = Depends(get_db_session),
     current_user: PublicUser = Depends(get_current_user),
 ):
     """
-    Delete Course Update by courseupdate_uuid
+    Delete Subject Update by subjectupdate_uuid
     """
 
-    return await delete_update(request, courseupdate_uuid, current_user, db_session)
+    return await delete_update(request, subjectupdate_uuid, current_user, db_session)

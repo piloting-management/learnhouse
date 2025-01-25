@@ -1,4 +1,5 @@
 from typing import List
+import logging
 from fastapi import APIRouter, Depends, Request
 from src.core.events.database import get_db_session
 from src.db.collections import CollectionCreate, CollectionRead, CollectionUpdate
@@ -12,6 +13,7 @@ from src.services.courses.collections import (
     delete_collection,
 )
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -26,6 +28,10 @@ async def api_create_collection(
     """
     Create new Collection
     """
+    # logger.info(f"collection_object {collection_object}")
+    # logger.info(f"current_user {current_user}")
+    # print(f"collection_object: {collection_object}")
+    # print(f"current_user: {current_user}")
     return await create_collection(request, collection_object, current_user, db_session)
 
 

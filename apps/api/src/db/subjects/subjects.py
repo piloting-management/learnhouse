@@ -35,20 +35,28 @@ class SubjectUpdate(SubjectBase):
     tags: Optional[str]
     public: Optional[bool]
 
-class SubjectRead(SubjectBase):
-    id: int
-    org_id: int = Field(default=None, foreign_key="organization.id")
-    authors: Optional[List["SubjectRead"]]
-    course_uuid: str
-    creation_date: str
-    update_date: str
-    pass
+
 
 class FullSubjectRead(SubjectBase):
     id: int
     subject_uuid: Optional[str]
     creation_date: Optional[str]
     update_date: Optional[str]
-    # Subjects
-    subjects: List["SubjectRead"]
     pass
+
+class SubjectRead(SubjectBase):
+    id: int
+    courses: list
+    subject_uuid: str
+    creation_date: str
+    update_date: str
+    pass
+
+# class SubjectRead(SubjectBase):
+#     id: int
+#     org_id: int = Field(default=None, foreign_key="organization.id")
+#     authors: Optional[List["SubjectRead"]]
+#     course_uuid: str
+#     creation_date: str
+#     update_date: str
+#     pass

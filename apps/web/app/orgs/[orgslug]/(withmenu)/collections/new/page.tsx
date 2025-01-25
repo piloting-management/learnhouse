@@ -1,7 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import { createCollection } from '@services/courses/collections'
+import { createCollection } from '@services/subjects/collections'
 import useSWR from 'swr'
 import { getAPIUrl, getUriWithOrg } from '@services/config/config'
 import { revalidateTags, swrFetcher } from '@services/utils/ts/requests'
@@ -10,15 +10,15 @@ import { useLHSession } from '@components/Contexts/LHSessionContext'
 
 function NewCollection(params: any) {
   const org = useOrg() as any
-  const session = useLHSession() as any;
-  const access_token = session?.data?.tokens?.access_token;
+  const session = useLHSession() as any
+  const access_token = session?.data?.tokens?.access_token
   const orgslug = params.params.orgslug
   const [name, setName] = React.useState('')
   const [description, setDescription] = React.useState('')
-  const [selectedCourses, setSelectedCourses] = React.useState([]) as any
+  const [selectedSubjects, setSelectedSubjects] = React.useState([]) as any
   const router = useRouter()
-  const { data: courses, error: error } = useSWR(
-    `${getAPIUrl()}courses/org_slug/${orgslug}/page/1/limit/10`,
+  const { data: subjects, error: error } = useSWR(
+    `${getAPIUrl()}subjects/org_slug/${orgslug}/page/1/limit/10`,
     (url) => swrFetcher(url, access_token)
   )
   const [isPublic, setIsPublic] = useState('true')
@@ -43,7 +43,7 @@ function NewCollection(params: any) {
     const collection = {
       name: name,
       description: description,
-      courses: selectedCourses,
+      subjects: selectedSubjects,
       public: isPublic,
       org_id: org.id,
     }
@@ -80,29 +80,29 @@ function NewCollection(params: any) {
           <option value="true">Public Collection </option>
         </select>
 
-        {!courses ? (
+        {!subjects ? (
           <p className="text-gray-500">Loading...</p>
         ) : (
           <div className="space-y-4 p-3">
-            <p>Courses</p>
-            {courses.map((course: any) => (
+            <p>Subjects</p>
+            {subjects.map((subject: any) => (
               <div
-                key={course.course_uuid}
+                key={subject.subject_uuid}
                 className="flex items-center space-x-2"
               >
                 <input
                   type="checkbox"
-                  id={course.id}
-                  name={course.name}
-                  value={course.id}
+                  id={subject.id}
+                  name={subject.name}
+                  value={subject.id}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setSelectedCourses([...selectedCourses, course.id])
+                      setSelectedSubjects([...selectedSubjects, subject.id])
                     } else {
-                      setSelectedCourses(
-                        selectedCourses.filter(
-                          (course_uuid: any) =>
-                            course_uuid !== course.course_uuid
+                      setSelectedSubjects(
+                        selectedSubjects.filter(
+                          (subject_uuid: any) =>
+                            subject_uuid !== subject.subject_uuid
                         )
                       )
                     }
@@ -111,10 +111,10 @@ function NewCollection(params: any) {
                 />
 
                 <label
-                  htmlFor={course.course_uuid}
+                  htmlFor={subject.subject_uuid}
                   className="text-sm text-gray-700"
                 >
-                  {course.name}
+                  {subject.name}
                 </label>
               </div>
             ))}
